@@ -2,6 +2,8 @@ package com.guanxun.util
 import android.util.TypedValue
 import android.content.res.Resources
 
+const val TAG = "<=^=>"
+
 /**
  * dp转px
  *

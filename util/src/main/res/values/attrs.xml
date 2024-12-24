@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GXWheel">
+        <!--文字大小-->
+        <attr name="orientation" format="enum" >
+            <enum name="vertical" value="0" />
+            <enum name="horizontal" value="1" />
+        </attr>
+        <!--文字大小-->
+        <attr name="textSize" format="dimension" />
+        <!--文字对齐方式-->
+        <attr name="textAlign" format="enum">
+            <enum name="left" value="0" />
+            <enum name="center" value="1" />
+            <enum name="right" value="2" />
+        </attr>
+        <!--文字距离边界的外边距-->
+        <attr name="marginBetweenItem" format="dimension" />
+        <!--未选中文字颜色-->
+        <attr name="textColor" format="color" />
+        <!--被选中的文字颜色-->
+        <attr name="focusTextColor" format="color" />
+        <!--是否显示焦点框中心标记线-->
+        <attr name="showFocusCenterLineIndicator" format="boolean" />
+        <!--焦点框中心标记线颜色-->
+        <attr name="focusCenterLineIndicatorColor" format="color" />
+        <!--焦点框中心标记线宽度-->
+        <attr name="focusCenterLineIndicatorLineWidth" format="dimension" />
+        <!--焦点框中心标记线高度系数-->
+        <attr name="focusCenterLineIndicatorFactor" format="float" />
+        <!--是否显示焦点框中心标记点-->
+        <attr name="showFocusSpotIndicator" format="boolean" />
+        <!--焦点框中心标记点颜色-->
+        <attr name="focusSpotIndicatorColor" format="color" />
+        <!--焦点框中心标记点半径-->
+        <attr name="focusSpotIndicatorRadius" format="dimension" />
+
+        <!--当前选中下标-->
+        <attr name="selectedItemPosition" format="integer" />
+
+        <!--是否显示左右边线-->
+        <attr name="showFocusFrame" format="boolean" />
+        <!--焦点框左右边线颜色-->
+        <attr name="focusFrameColor" format="color" />
+        <!--焦点框左右边线线宽-->
+        <attr name="focusFrameWidth" format="dimension" />
+        <!--焦点框左右边线高度系数-->
+        <attr name="focusFrameSizeFactor" format="float" />
+
+        <!--是否绘制选中区域-->
+        <attr name="drawFocusRect" format="boolean" />
+        <!--选中区域颜色-->
+        <attr name="focusRectColor" format="color" />
+        <!--焦点窗口高度系数-->
+        <attr name="focusHeightFactor" format="float" />
+    </declare-styleable>
+</resources>
