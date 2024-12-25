@@ -15,8 +15,6 @@ import android.view.ViewConfiguration
 import android.widget.OverScroller
 import androidx.annotation.RawRes
 import kotlin.math.abs
-import android.media.AudioManager
-import android.media.SoundPool
 
 class GXWheel @JvmOverloads constructor(
     context: Context,
@@ -852,159 +850,158 @@ class GXWheel @JvmOverloads constructor(
             }
         }
     }
-}
 
 
-class Config(context: Context, attrs: AttributeSet?) {
-    var mOrientation= Orientation.Vertical
-    // 字体大小
-    var mTextSize = 0f
+    class Config(context: Context, attrs: AttributeSet?) {
+        private val _defaultTextSize = sp2px(15f)
+        private val DEFAULT_TEXT_BOUNDARY_MARGIN = dp2px(2f)
+        private val DEFAULT_DIVIDER_HEIGHT = dp2px(1f)
+        private val DEFAULT_NORMAL_TEXT_COLOR = Color.DKGRAY
+        private val DEFAULT_SELECTED_TEXT_COLOR = Color.BLACK
+        var mOrientation= Orientation.Vertical
+        // 字体大小
+        var mTextSize = 0f
 
-    // 字体外边距，目的是留有边距
-    var mTextLeftAndRightBoundaryMargin = 0f
+        // 字体外边距，目的是留有边距
+        var mTextLeftAndRightBoundaryMargin = 0f
 
-    // 文字颜色
-    var mTextColor = 0
+        // 文字颜色
+        var mTextColor = 0
 
-    // 选中item文字颜色
-    var mFocusTextColor = 0
+        // 选中item文字颜色
+        var mFocusTextColor = 0
 
-    // 是否显示焦点框左右边线
-    var showFocusFrame = false
+        // 是否显示焦点框左右边线
+        var showFocusFrame = false
 
-    // 焦点框左右边线高度
-    var mFocusFrameWidth = 0f
+        // 焦点框左右边线高度
+        var mFocusFrameWidth = 0f
 
-    // 焦点框左右边线高度系数
-    var mFocusFrameHeightFactor = 0f
+        // 焦点框左右边线高度系数
+        var mFocusFrameHeightFactor = 0f
 
-    // 分割线的颜色
-    var mFocusFrameColor = 0
+        // 分割线的颜色
+        var mFocusFrameColor = 0
 
-    // 是否绘制焦点窗
-    var mDrawFocusRect = false
+        // 是否绘制焦点窗
+        var mDrawFocusRect = false
 
-    // 焦点窗背景颜色
-    var mFocusRectColor = 0
+        // 焦点窗背景颜色
+        var mFocusRectColor = 0
 
-    // 焦点窗左右边线高度系数
-    var mFocusHeightFactor = 0f
+        // 焦点窗左右边线高度系数
+        var mFocusHeightFactor = 0f
 
-    var mShowFocusCenterLineIndicator = true
+        var mShowFocusCenterLineIndicator = true
 
-    var mFocusCenterLineIndicatorColor = 0
+        var mFocusCenterLineIndicatorColor = 0
 
-    var mFocusCenterLineIndicatorWidth = 0f
+        var mFocusCenterLineIndicatorWidth = 0f
 
-    var mFocusCenterLineIndicatorHeightFactor = 0f
+        var mFocusCenterLineIndicatorHeightFactor = 0f
 
-    var mShowFocusSpotIndicator = true
+        var mShowFocusSpotIndicator = true
 
-    var mFocusSpotIndicatorColor = 0
+        var mFocusSpotIndicatorColor = 0
 
-    var mFocusSpotIndicatorRadius = 0f
+        var mFocusSpotIndicatorRadius = 0f
 
-    var mMaxFlingVelocity = 0
+        var mMaxFlingVelocity = 0
 
-    var mMinFlingVelocity = 0
+        var mMinFlingVelocity = 0
 
-    init {
-        initAttrsAndDefault(context, attrs)
-        val viewConfiguration = ViewConfiguration.get(context)
-        mMaxFlingVelocity = viewConfiguration.scaledMaximumFlingVelocity
-        mMinFlingVelocity = viewConfiguration.scaledMinimumFlingVelocity
-    }
+        init {
+            initAttrsAndDefault(context, attrs)
+            val viewConfiguration = ViewConfiguration.get(context)
+            mMaxFlingVelocity = viewConfiguration.scaledMaximumFlingVelocity
+            mMinFlingVelocity = viewConfiguration.scaledMinimumFlingVelocity
+        }
 
-    /**
-     * 初始化自定义属性及默认值
-     *
-     * @param context
-     * 上下文
-     * @param attrs
-     * attrs
-     */
-    private fun initAttrsAndDefault(context: Context, attrs: AttributeSet?) {
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.GXWheel)
-        val mOrientationEnumValue=typedArray.getInt(R.styleable.GXWheel_orientation,1)
+        /**
+         * 初始化自定义属性及默认值
+         *
+         * @param context
+         * 上下文
+         * @param attrs
+         * attrs
+         */
+        private fun initAttrsAndDefault(context: Context, attrs: AttributeSet?) {
+            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.GXWheel)
+            val mOrientationEnumValue=typedArray.getInt(R.styleable.GXWheel_orientation,1)
 
-        mOrientation = mOrientationEnumValue.toOrientation()
-        mTextSize =
-            typedArray.getDimension(R.styleable.GXWheel_textSize, DEFAULT_TEXT_SIZE)
+            mOrientation = mOrientationEnumValue.toOrientation()
+            mTextSize =
+                typedArray.getDimension(R.styleable.GXWheel_textSize, _defaultTextSize)
 
-        mTextLeftAndRightBoundaryMargin = typedArray.getDimension(
-            R.styleable.GXWheel_marginBetweenItem,
-            DEFAULT_TEXT_BOUNDARY_MARGIN
-        )
-        mTextColor =
-            typedArray.getColor(
-                R.styleable.GXWheel_textColor,
-                DEFAULT_NORMAL_TEXT_COLOR
+            mTextLeftAndRightBoundaryMargin = typedArray.getDimension(
+                R.styleable.GXWheel_marginBetweenItem,
+                DEFAULT_TEXT_BOUNDARY_MARGIN
             )
-        mFocusTextColor = typedArray.getColor(
-            R.styleable.GXWheel_focusTextColor,
-            DEFAULT_SELECTED_TEXT_COLOR
-        )
-        showFocusFrame = typedArray.getBoolean(R.styleable.GXWheel_showFocusFrame, false)
-        mFocusFrameWidth =
-            typedArray.getDimension(
-                R.styleable.GXWheel_focusFrameWidth,
-                DEFAULT_DIVIDER_HEIGHT
-            )
-
-        mFocusFrameColor =
-            typedArray.getColor(
-                R.styleable.GXWheel_focusFrameColor,
+            mTextColor =
+                typedArray.getColor(
+                    R.styleable.GXWheel_textColor,
+                    DEFAULT_NORMAL_TEXT_COLOR
+                )
+            mFocusTextColor = typedArray.getColor(
+                R.styleable.GXWheel_focusTextColor,
                 DEFAULT_SELECTED_TEXT_COLOR
             )
-        mDrawFocusRect =
-            typedArray.getBoolean(R.styleable.GXWheel_drawFocusRect, false)
-        mFocusRectColor =
-            typedArray.getColor(R.styleable.GXWheel_focusRectColor, Color.TRANSPARENT)
+            showFocusFrame = typedArray.getBoolean(R.styleable.GXWheel_showFocusFrame, false)
+            mFocusFrameWidth =
+                typedArray.getDimension(
+                    R.styleable.GXWheel_focusFrameWidth,
+                    DEFAULT_DIVIDER_HEIGHT
+                )
 
-        mFocusHeightFactor = typedArray.getFloat(
-            R.styleable.GXWheel_focusHeightFactor, 1f
-        )
+            mFocusFrameColor =
+                typedArray.getColor(
+                    R.styleable.GXWheel_focusFrameColor,
+                    DEFAULT_SELECTED_TEXT_COLOR
+                )
+            mDrawFocusRect =
+                typedArray.getBoolean(R.styleable.GXWheel_drawFocusRect, false)
+            mFocusRectColor =
+                typedArray.getColor(R.styleable.GXWheel_focusRectColor, Color.TRANSPARENT)
 
-        mShowFocusCenterLineIndicator = typedArray.getBoolean(
-            R.styleable.GXWheel_showFocusCenterLineIndicator, true
-        )
+            mFocusHeightFactor = typedArray.getFloat(
+                R.styleable.GXWheel_focusHeightFactor, 1f
+            )
 
-        mFocusCenterLineIndicatorColor = typedArray.getColor(
-            R.styleable.GXWheel_focusCenterLineIndicatorColor, Color.RED
-        )
+            mShowFocusCenterLineIndicator = typedArray.getBoolean(
+                R.styleable.GXWheel_showFocusCenterLineIndicator, true
+            )
 
-        mFocusCenterLineIndicatorWidth = typedArray.getDimension(
-            R.styleable.GXWheel_focusCenterLineIndicatorLineWidth, dp2px(2f)
-        )
+            mFocusCenterLineIndicatorColor = typedArray.getColor(
+                R.styleable.GXWheel_focusCenterLineIndicatorColor, Color.RED
+            )
 
-        mFocusCenterLineIndicatorHeightFactor=typedArray.getFloat(
-            R.styleable.GXWheel_focusCenterLineIndicatorFactor, 1f
-        )
+            mFocusCenterLineIndicatorWidth = typedArray.getDimension(
+                R.styleable.GXWheel_focusCenterLineIndicatorLineWidth, dp2px(2f)
+            )
 
-        mShowFocusSpotIndicator = typedArray.getBoolean(
-            R.styleable.GXWheel_showFocusSpotIndicator, true
-        )
+            mFocusCenterLineIndicatorHeightFactor=typedArray.getFloat(
+                R.styleable.GXWheel_focusCenterLineIndicatorFactor, 1f
+            )
 
-        mFocusSpotIndicatorColor = typedArray.getColor(
-            R.styleable.GXWheel_focusSpotIndicatorColor, Color.RED
-        )
+            mShowFocusSpotIndicator = typedArray.getBoolean(
+                R.styleable.GXWheel_showFocusSpotIndicator, true
+            )
 
-        mFocusSpotIndicatorRadius = typedArray.getDimension(
-            R.styleable.GXWheel_focusSpotIndicatorRadius, dp2px(2f)
-        )
+            mFocusSpotIndicatorColor = typedArray.getColor(
+                R.styleable.GXWheel_focusSpotIndicatorColor, Color.RED
+            )
 
-        mFocusFrameHeightFactor = typedArray.getFloat(
-            R.styleable.GXWheel_focusFrameSizeFactor, 1f
-        )
-        typedArray.recycle()
+            mFocusSpotIndicatorRadius = typedArray.getDimension(
+                R.styleable.GXWheel_focusSpotIndicatorRadius, dp2px(2f)
+            )
+
+            mFocusFrameHeightFactor = typedArray.getFloat(
+                R.styleable.GXWheel_focusFrameSizeFactor, 1f
+            )
+            typedArray.recycle()
+        }
     }
 }
-
-private val DEFAULT_TEXT_SIZE = sp2px(15f)
-private val DEFAULT_TEXT_BOUNDARY_MARGIN = dp2px(2f)
-private val DEFAULT_DIVIDER_HEIGHT = dp2px(1f)
-private const val DEFAULT_NORMAL_TEXT_COLOR = Color.DKGRAY
-private const val DEFAULT_SELECTED_TEXT_COLOR = Color.BLACK
 
 enum class Orientation(val value:Int){
     Vertical(0),
@@ -1013,84 +1010,4 @@ enum class Orientation(val value:Int){
 
 fun Int.toOrientation():Orientation{
     return Orientation.entries.first{it.ordinal==this}
-}
-
-/**
- * 获取文字中心到基线距离,结果是负值，因为baseline在center的下方
- */
-fun Paint.centerToBaseline(): Float {
-    return fontMetrics.centerToBaseline()
-}
-
-/**
- * 获取文字中心到基线距离,结果是负值，因为baseline在center的下方
- */
-fun Paint.FontMetrics.centerToBaseline(): Float {
-    return (descent - ascent) / 2 - descent
-}
-
-
-/**
- * SoundPool 辅助类
- */
-class SoundDriver() {
-    private var mSoundPool: SoundPool = SoundPool.Builder().setMaxStreams(5).build()
-    private var mSoundId = 0
-    /**
-     * 获取音量
-     *
-     * @return 音频播放音量 range 0.0-1.0
-     */
-
-    /**
-     * 设置音量
-     * 音频播放音量 range 0.0-1.0
-     */
-    var playVolume = 0f
-
-    /**
-     * 加载音频资源
-     *
-     * @param context
-     * 上下文
-     * @param resId
-     * 音频资源 [RawRes]
-     */
-    fun load(context: Context, @RawRes resId: Int) {
-        mSoundId = mSoundPool.load(context, resId, 1)
-
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        // 获取系统媒体当前音量
-        val currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        // 获取系统媒体最大音量
-        val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        // 设置播放音量
-        playVolume = currentVolume * 1.0f / maxVolume
-    }
-
-    fun unload() {
-        mSoundId = 0
-    }
-
-    var streamId: Int = 0
-
-    /**
-     * 播放声音效果
-     */
-    fun playSound() {
-        if (mSoundId != 0) {
-            if (streamId > 0) {
-                mSoundPool.stop(streamId)
-            }
-            streamId = mSoundPool.play(mSoundId, playVolume, playVolume, 1, 0, 2f)
-        }
-
-    }
-
-    /**
-     * 释放SoundPool
-     */
-    fun release() {
-        mSoundPool.release()
-    }
 }
