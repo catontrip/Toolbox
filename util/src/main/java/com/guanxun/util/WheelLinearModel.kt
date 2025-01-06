@@ -33,7 +33,7 @@ open class WheelLinearModel {
     /**
      * 每个条目的长度
      */
-    var itemLen: Int = 0
+    var itemSize: Int = 0
         set(value) {
             field = value
             reset()
@@ -52,16 +52,16 @@ open class WheelLinearModel {
      * 重置计算属性，当itemLen，itemCount，apertureMaxLength之一发生变化时，其他属性都需要重新计算
      */
     private fun reset() {
-        if (itemLen == 0) return
+        if (itemSize == 0) return
 //    val focusIndex = indexOfItemAtFocus()
-        visibleItemCount = apertureMaxLength / itemLen
+        visibleItemCount = apertureMaxLength / itemSize
         if (visibleItemCount % 2 == 0) {
             visibleItemCount -= 1
         }
-        apertureLength = visibleItemCount * itemLen
+        apertureLength = visibleItemCount * itemSize
         focusCenter = apertureLength / 2f
-        focusStart = (focusCenter - itemLen.toFloat() / 2).toInt()
-        focusEnd = (focusCenter + itemLen.toFloat() / 2).toInt()
+        focusStart = (focusCenter - itemSize.toFloat() / 2).toInt()
+        focusEnd = (focusCenter + itemSize.toFloat() / 2).toInt()
         offSet = focusStart
     }
 
@@ -113,7 +113,7 @@ open class WheelLinearModel {
      * 所有条目总长度
      */
     private val totalItemLength: Int
-        get() = itemLen * itemCount
+        get() = itemSize * itemCount
 
     /**
      *  旋转方向。“+”正方向，“-”负方向， ""无方向
@@ -177,7 +177,7 @@ open class WheelLinearModel {
             return if (allowCycleDisplay) {
                 Int.MIN_VALUE
             } else {
-                focusStart - (itemCount - 1) * itemLen
+                focusStart - (itemCount - 1) * itemSize
             }
         }
 
@@ -204,7 +204,7 @@ open class WheelLinearModel {
      * @return 条目i的起点下标
      */
     fun coordOfIndex(i: Int): Int {
-        return coord(i, offSet, itemLen)
+        return coord(i, offSet, itemSize)
     }
 
     /**
@@ -236,10 +236,10 @@ open class WheelLinearModel {
     fun itemNeedSplitDisplay(): ItemParam? {
         if (!allowCycleDisplay) return null
         val item0StartToEndDistance = totalItemLength - offSet % totalItemLength
-        val lastItemDisplaySpace = item0StartToEndDistance % itemLen
+        val lastItemDisplaySpace = item0StartToEndDistance % itemSize
         if (lastItemDisplaySpace == 0)
             return null
-        val indexOfItemNeedSplitDisplay = (item0StartToEndDistance / itemLen + itemCount) % itemCount
+        val indexOfItemNeedSplitDisplay = (item0StartToEndDistance / itemSize + itemCount) % itemCount
         val itemNeedSplitDisplay = ItemParam(
             index = indexOfItemNeedSplitDisplay,
             startCoord = -lastItemDisplaySpace
@@ -253,7 +253,8 @@ open class WheelLinearModel {
     fun indexOfItemAtFocus(): Int {
         val item0X = coordOfIndex(0)
         val distance: Int = (item0X.toFloat() - focusCenter).toInt()
-        val gap: Int = distance / itemLen
+        if(itemSize==0)return 0
+        val gap: Int = distance / itemSize
         if (itemCount == 0) return 0
         return if (distance < 0)
         //item[0]在可视窗口中心item前面，gap此时为负
@@ -278,6 +279,10 @@ open class WheelLinearModel {
      * @param index 条目下标
      */
     fun turnNToCenter(index: Int) {
+        Log.d(TAG, "turnNToCenter: $index")
+        Thread.currentThread().stackTrace.forEach {
+            Log.d(TAG,"${it.className}.${it.methodName}")
+        }
         turn(distanceOfNToCenter(index))
     }
 
@@ -312,7 +317,7 @@ open class WheelLinearModel {
     fun pointOfIndex(pointCoord: Int): ItemParam? {
         for (i in 0..<itemCount) {
             val start = coordOfIndex(i)
-            if (start <= pointCoord && pointCoord < start + itemLen)
+            if (start <= pointCoord && pointCoord < start + itemSize)
                 return ItemParam(index = i)
         }
         return null

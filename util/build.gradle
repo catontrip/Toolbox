@@ -35,6 +35,7 @@ dependencies {
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
     implementation libs.material
+    implementation libs.androidx.truth
     testImplementation libs.junit
     testImplementation libs.testng
     testImplementation libs.junit.jupiter

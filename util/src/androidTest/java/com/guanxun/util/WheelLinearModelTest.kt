@@ -25,22 +25,22 @@ class WheelLineModelTest {
     fun coordOfIndexA() {
         w.apertureMaxLength = 150
         w.itemCount = 10
-        w.itemLen = 20
+        w.itemSize = 20
 
         for (i in 0..9) {
             val x = w.coordOfIndex(i)
             val dist = (random() * 1000).toInt()
             Log.d(TAG, "coordOfIndexA: $i,$x")
-            assertEquals((w.itemLen * i + w.focusCenter - w.itemLen / 2).toInt() % 200, x % 200)
+            assertEquals((w.itemSize * i + w.focusCenter - w.itemSize / 2).toInt() % 200, x % 200)
             w.turn(1)
             val expect = x + 1
             assertEquals(expect, w.coordOfIndex(i))
             w.turn(-1)
             w.turn(dist)
-            val delta = dist % (w.itemLen * w.itemCount)
+            val delta = dist % (w.itemSize * w.itemCount)
             val newX = w.coordOfIndex(i)
             val flag =
-                x + delta == newX || x - delta == newX || (w.itemLen * w.itemCount) - x + newX == delta
+                x + delta == newX || x - delta == newX || (w.itemSize * w.itemCount) - x + newX == delta
             if (!flag) {
                 Log.d("TAG", "xByIndexA: i=$i: x=$x newX=$newX delta=$delta")
             }
@@ -53,7 +53,7 @@ class WheelLineModelTest {
     fun coordOfIndexB() {
         w.apertureMaxLength = 140
         w.itemCount = 10
-        w.itemLen = 20
+        w.itemSize = 20
 
         for (i in 0..10 * 10) {
             val ind = i % 10
@@ -63,7 +63,7 @@ class WheelLineModelTest {
             w.turn(-dist)
             assertEquals(x, w.coordOfIndex(ind))
             Log.d("$dist", "xByIndexB: $ind $x")
-            assertTrue(x <= w.itemLen * (w.itemCount - 1) && x > -w.itemLen)
+            assertTrue(x <= w.itemSize * (w.itemCount - 1) && x > -w.itemSize)
             w.turn(-dist)
             w.turn(+dist)
             assertEquals(x, w.coordOfIndex(ind))
@@ -74,7 +74,7 @@ class WheelLineModelTest {
     fun coordOfIndexC() {
         w.apertureMaxLength = 17
         w.itemCount = 5
-        w.itemLen = 5
+        w.itemSize = 5
         assertEquals(5, w.coordOfIndex(0))
         w.turn(10)
         assertEquals(15, w.coordOfIndex(0))
@@ -84,7 +84,7 @@ class WheelLineModelTest {
         ////
         w.apertureMaxLength = 17
         w.itemCount = 2
-        w.itemLen = 5
+        w.itemSize = 5
         w.turn(-5)
         assertEquals(0, w.coordOfIndex(0))
         w.turn(-5)
@@ -97,7 +97,7 @@ class WheelLineModelTest {
     fun indexOfWindowCenter() {
         w.apertureMaxLength = 140
         w.itemCount = 10
-        w.itemLen = 20
+        w.itemSize = 20
         assertEquals(0, w.indexOfItemAtFocus())
         w.turn(9)
         assertEquals(0, w.indexOfItemAtFocus())
@@ -125,16 +125,16 @@ class WheelLineModelTest {
     fun turnNToCenter() {
         w.apertureMaxLength = 130
         w.itemCount = 10
-        w.itemLen = 20
+        w.itemSize = 20
         w.turnNToCenter(0)
-        assertEquals((w.focusCenter - w.itemLen / 2).toInt(), w.coordOfIndex(0))
+        assertEquals((w.focusCenter - w.itemSize / 2).toInt(), w.coordOfIndex(0))
         w.turnNToCenter(6)
-        assertEquals((w.focusCenter - w.itemLen / 2).toInt(), w.coordOfIndex(6))
+        assertEquals((w.focusCenter - w.itemSize / 2).toInt(), w.coordOfIndex(6))
         for (i in 0..1000) {
             val n: Int = (random() * 10).toInt()
             w.turnNToCenter(n)
             Log.d("TAG", "turnNToCenter: $n,${(10 + n - 3) % 10}")
-            assertEquals((w.focusCenter - w.itemLen / 2).toInt(), w.coordOfIndex(n))
+            assertEquals((w.focusCenter - w.itemSize / 2).toInt(), w.coordOfIndex(n))
 //      assertEquals(0,w.coordOfIndex((10+n-3)%10))
         }
     }
@@ -146,8 +146,8 @@ class WheelLineModelTest {
             val n: Int = (random() * w.itemCount).toInt()
             w.turnNToCenter(n)
             assertEquals(
-                (w.focusCenter - w.itemLen / 2).toInt(), w.coordOfIndex(n),
-                "turnNToCenterB: $n, itemLen=${w.itemLen}, count=${w.itemCount}, vc=${w.visibleItemCount}"
+                (w.focusCenter - w.itemSize / 2).toInt(), w.coordOfIndex(n),
+                "turnNToCenterB: $n, itemSize=${w.itemSize}, count=${w.itemCount}, vc=${w.visibleItemCount}"
             )
         }
     }
@@ -158,54 +158,54 @@ class WheelLineModelTest {
         val itemCount: Int = visibleItems + (random() * 10).toInt()
         w.apertureMaxLength = visibleItems * itemLen + (random() * itemLen).toInt()
         w.itemCount = itemCount
-        w.itemLen = itemLen
+        w.itemSize = itemLen
     }
 
     @Test
     fun distanceOfNToCenter() {
         for (i in 0..10000) {
             randomSetting(w)
-            val turn: Int = (random() * w.itemLen).toInt()
+            val turn: Int = (random() * w.itemSize).toInt()
             w.turn(turn)
             val ind = w.indexOfItemAtFocus()
             val dis = w.distanceOfNToCenter(ind)
-            Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemLen}, ${w.itemCount}")
+            Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemSize}, ${w.itemCount}")
             assertTrue(
-                abs(dis) <= w.itemLen / 2 + 1,
-                "distanceOfNToCenter: turn=$turn, dist=$dis, itemLen=${w.itemLen}, count=${w.itemCount}"
+                abs(dis) <= w.itemSize / 2 + 1,
+                "distanceOfNToCenter: turn=$turn, dist=$dis, itemSize=${w.itemSize}, count=${w.itemCount}"
             )
         }
     }
 
     @Test
     fun distanceOfNToCenterX() {
-        w.itemLen = 189
+        w.itemSize = 189
         w.itemCount = 9
-        w.apertureMaxLength = w.itemLen * 3
+        w.apertureMaxLength = w.itemSize * 3
         val turn: Int = 94
         w.turn(turn)
         val ind = w.indexOfItemAtFocus()
         val dis = w.distanceOfNToCenter(ind)
-        Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemLen}, ${w.itemCount}")
+        Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemSize}, ${w.itemCount}")
         assertTrue(
-            abs(dis) <= w.itemLen / 2 + 1,
-            "distanceOfNToCenter: turn=$turn, dist=$dis, itemLen=${w.itemLen}, count=${w.itemCount}"
+            abs(dis) <= w.itemSize / 2 + 1,
+            "distanceOfNToCenter: turn=$turn, dist=$dis, itemSize=${w.itemSize}, count=${w.itemCount}"
         )
     }
 
     @Test
     fun distanceOfNToCenterA() {
-        w.itemLen = 82
+        w.itemSize = 82
         w.itemCount = 1
-        w.apertureMaxLength = w.itemLen * 3
+        w.apertureMaxLength = w.itemSize * 3
         val turn: Int = 30
         w.turn(turn)
         val ind = w.indexOfItemAtFocus()
         val dis = w.distanceOfNToCenter(ind)
-        Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemLen}, ${w.itemCount}")
+        Log.d(TAG, "distanceOfNToCenter: $turn, $dis,${w.itemSize}, ${w.itemCount}")
         assertTrue(
-            abs(dis) <= w.itemLen / 2 + 1,
-            "distanceOfNToCenter: turn=$turn, dist=$dis, itemLen=${w.itemLen}, count=${w.itemCount}"
+            abs(dis) <= w.itemSize / 2 + 1,
+            "distanceOfNToCenter: turn=$turn, dist=$dis, itemSize=${w.itemSize}, count=${w.itemCount}"
         )
     }
 
@@ -214,13 +214,13 @@ class WheelLineModelTest {
         for (i in 0..10000) {
             randomSetting(w)
             val index = (random() * w.itemCount).toInt()
-            val relativePositionWithinItem = (random() * w.itemLen).toInt()
+            val relativePositionWithinItem = (random() * w.itemSize).toInt()
             if(relativePositionWithinItem==0)continue
-            val coord = (index * w.itemLen + relativePositionWithinItem+w.offSet)%(w.itemCount*w.itemLen)
+            val coord = (index * w.itemSize + relativePositionWithinItem+w.offSet)%(w.itemCount*w.itemSize)
             val result = w.pointOfIndex(coord)
             assertNotNull(result)
             result?.let {
-                assertEquals(index, it.index,"$i, $index, ${w.itemLen}, $coord")
+                assertEquals(index, it.index,"$i, $index, ${w.itemSize}, $coord")
             }
         }
     }

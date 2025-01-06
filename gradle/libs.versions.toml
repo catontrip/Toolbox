@@ -26,6 +26,7 @@ junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.r
 testng = { group = "org.testng", name = "testng", version.ref = "testng" }
 androidx-truth = { group = "androidx.test.ext", name = "truth", version.ref = "truth" }
 
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

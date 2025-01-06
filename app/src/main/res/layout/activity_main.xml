@@ -7,13 +7,21 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <com.guanxun.util.GXTimeWheel
+            android:id="@+id/p"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            app:clockFormat_tp="hour24"
+            app:focusSpotIndicatorColor_tp="@color/red"
+            app:focusCenterLineIndicatorLineWidth_tp="4dp"
+            app:showFocusCenterLineIndicator_tp="true"
+            app:showFocusSpotIndicator_tp="true"
+            app:focusSpotIndicatorRadius_tp="6dp"
+            app:textSize_tp="40sp"
+            app:marginBetweenItem_tp="12dp"
+            app:showFocusFrame_tp="true"
+            app:focusFrameColor_tp="@color/deepSkyBlue"
+            app:focusFrameWidth_tp="6dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

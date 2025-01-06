@@ -32,7 +32,16 @@ class GXWheel @JvmOverloads constructor(
     /**
      * xml 设置
      */
-    private val cfg = Config(context, attrs)
+    var cfg = Config(context, attrs)
+        set(v) {
+            field = v
+            if (field.mOrientation == Orientation.Horizontal) {
+                model.itemSize = view.mItemWidth
+            } else {
+                model.itemSize = view.mItemHeight
+            }
+            view.calculateAvailableCanvasClip()
+        }
 
     /**
      *   音频驱动
@@ -58,8 +67,9 @@ class GXWheel @JvmOverloads constructor(
             if (value.isEmpty()) return
             field = value
             model.itemCount = data.size
-            model.itemLen = view.mItemWidth
-            model.turnNToCenter(0)
+            model.itemSize = view.mItemSize4Model
+            selectedIndex = 0
+            invalidate()
         }
 
     /**
@@ -78,6 +88,7 @@ class GXWheel @JvmOverloads constructor(
             invalidate()
             onSelectionChangedListener(data, field)
         }
+        get() = model.indexOfItemAtFocus()
 
     /**
      * 用户定制化的条目格式化lambda，缺省调用toString
@@ -85,8 +96,19 @@ class GXWheel @JvmOverloads constructor(
     var customizedFormat: (Any) -> String = { it.toString() }
         set(value) {
             field = value
-            model.itemLen = view.mItemWidth
+            model.itemSize = view.mItemWidth
         }
+
+    /**
+     * 转轮取向
+     */
+    var orientation: Orientation
+        set(v) {
+            cfg.mOrientation = v
+            view = if (cfg.mOrientation == Orientation.Vertical) VerticalView()
+            else HorizontalView()
+        }
+        get() = cfg.mOrientation
 
     /**
      * 选中是事件处理方法
@@ -187,7 +209,6 @@ class GXWheel @JvmOverloads constructor(
                     }
                 }
                 invalidate()
-
             }
 
             MotionEvent.ACTION_UP -> {
@@ -241,9 +262,9 @@ class GXWheel @JvmOverloads constructor(
                 if (model.distanceOfNToCenter(focusIndex) != 0) {
                     model.turnNToCenter(focusIndex)
                     invalidate()
-                    mMotionState = ""
-                    onSelectionChangedListener(data, focusIndex)
                 }
+                mMotionState = ""
+                onSelectionChangedListener(data, focusIndex)
             } else if (mMotionState == "") {
                 Log.d(TAG, "onTouchEvent: onItemClickListener ")
                 val item = if (cfg.mOrientation == Orientation.Horizontal)
@@ -252,8 +273,9 @@ class GXWheel @JvmOverloads constructor(
                     model.pointOfIndex(event.y.toInt() - model.coordSysOffset - paddingLeft)
 
                 item?.let {
-                    onItemClickListener(data, item.index)
                     model.turnNToCenter(item.index)
+                    onItemClickListener(data, item.index)
+                    onSelectionChangedListener(data, item.index)
                     invalidate()
                 }
             }
@@ -270,11 +292,13 @@ class GXWheel @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
+        val currentIndex = selectedIndex
         Log.d(TAG, "onSizeChanged: $w, $h")
         view.onSizeChanged(w, h, oldw, oldh)
         view.calculateAvailableCanvasClip()
         //至此，wlm的参数才设置完毕，准备就绪。才可以设置选中的item
-        selectedIndex = selectedIndex
+        selectedIndex = currentIndex
+        Log.d(TAG, "onSizeChanged: $selectedIndex")
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -293,15 +317,43 @@ class GXWheel @JvmOverloads constructor(
         /**
          *
          */
-        protected val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
         /**
          * 焦点区域画笔
          */
-        protected val focusPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        protected val outOfFocusTextPaint: Paint
+            get() {
+                mPaint.color = cfg.mTextColor
+                mPaint.textSize = cfg.mTextSize
+                mPaint.typeface = normalTypeface
+                mPaint.textAlign = Paint.Align.CENTER
+                return mPaint
+            }
+        private val fPaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
+        /**
+         * 焦点区域画笔
+         */
+        protected val focusPaint: Paint
+            get() = fPaint
+        protected val focusTextPaint: Paint
+            get() {
+                val p = fPaint
+                p.color = cfg.mFocusTextColor
+                p.textSize = cfg.mTextSize
+                p.typeface = boldTypeface
+                p.textAlign = Paint.Align.CENTER
+                return p
+            }
         private val normalTypeface: Typeface = Typeface.DEFAULT
         private val boldTypeface: Typeface = Typeface.DEFAULT_BOLD
+        protected val focusSpotIndicatorPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            get() {
+                return field.apply {
+                    color = cfg.mFocusSpotIndicatorColor
+                }
+            }
 
         /**
          *文字的最大宽度
@@ -309,11 +361,8 @@ class GXWheel @JvmOverloads constructor(
         private val mMaxTextWidth: Int
             get() {
                 var max = 0
-                focusPaint.textSize = cfg.mTextSize
-                focusPaint.typeface = boldTypeface
-                focusPaint.textAlign = Paint.Align.CENTER
                 data.forEach {
-                    val textWidth = focusPaint.measureText(customizedFormat(it)).toInt()
+                    val textWidth = focusTextPaint.measureText(customizedFormat(it)).toInt()
                     max = textWidth.coerceAtLeast(max)
                 }
                 return max
@@ -326,12 +375,17 @@ class GXWheel @JvmOverloads constructor(
             get() = mMaxTextWidth + cfg.mTextLeftAndRightBoundaryMargin.toInt() * 2
 
         /**
+         * 供WheelLineModel使用的item size
+         */
+        abstract val mItemSize4Model: Int
+
+        /**
          * 条目中字体高度
          */
         private val mItemTextHeight: Int
             get() {
                 var height: Int
-                focusPaint.fontMetrics.apply {
+                focusTextPaint.fontMetrics.apply {
                     // itemHeight实际等于字体高度+一个行间距
                     height = (bottom - top).toInt()
                 }
@@ -365,14 +419,6 @@ class GXWheel @JvmOverloads constructor(
             get() = aperture.centerY() + mItemHeight / 2
 
         init {
-            mPaint.color = cfg.mTextColor
-            mPaint.textSize = cfg.mTextSize
-            mPaint.typeface = normalTypeface
-            mPaint.textAlign = Paint.Align.CENTER
-            focusPaint.color = cfg.mFocusTextColor
-            focusPaint.textSize = cfg.mTextSize
-            focusPaint.typeface = boldTypeface
-            focusPaint.textAlign = Paint.Align.CENTER
             calculateAvailableCanvasClip()
         }
 
@@ -385,13 +431,13 @@ class GXWheel @JvmOverloads constructor(
          * 计算生成apertureByAbsolutCoord
          */
         fun calculateAvailableCanvasClip() {
-            val gap = (model.apertureMaxLength - model.apertureLength)/2
+            val gap = (model.apertureMaxLength - model.apertureLength) / 2
             apertureByAbsolutCoord = if (cfg.mOrientation == Orientation.Horizontal) RectF(
-                paddingStart.toFloat() + gap , paddingTop.toFloat(),
-                width.toFloat() - paddingEnd - gap , height.toFloat() - paddingBottom
+                paddingStart.toFloat() + gap, paddingTop.toFloat(),
+                width.toFloat() - paddingEnd - gap, height.toFloat() - paddingBottom
             )
             else RectF(
-                paddingStart.toFloat(), paddingTop.toFloat() + gap ,
+                paddingStart.toFloat(), paddingTop.toFloat() + gap,
                 width.toFloat() - paddingEnd, height.toFloat() - paddingBottom - gap
             )
         }
@@ -405,6 +451,25 @@ class GXWheel @JvmOverloads constructor(
                     0f, 0f,
                     apertureByAbsolutCoord.width(), apertureByAbsolutCoord.height()
                 )
+            }
+
+        protected val focusFramePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            get() {
+                return field.apply {
+                    color = cfg.mFocusFrameColor
+                }
+            }
+        protected val focusLineIndicatorPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            get() {
+                return field.apply {
+                    color = cfg.mFocusCenterLineIndicatorColor
+                }
+            }
+        protected val focusRectPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            get() {
+                return field.apply {
+                    color = cfg.mFocusFrameColor
+                }
             }
 
         fun onDraw(canvas: Canvas) {
@@ -456,7 +521,10 @@ class GXWheel @JvmOverloads constructor(
      *                               VerticalView
      *
      */
-    inner class VerticalView : V() {
+    inner class VerticalView() : V() {
+        override val mItemSize4Model: Int
+            get() = mItemHeight
+
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             Log.d(TAG, "onMeasure: ")
             var height = 0
@@ -485,7 +553,7 @@ class GXWheel @JvmOverloads constructor(
                 }
 
                 MeasureSpec.AT_MOST -> {
-                    width = widthSize
+                    width = mItemWidth + paddingEnd + paddingStart
                 }
 
                 MeasureSpec.UNSPECIFIED -> {
@@ -501,11 +569,14 @@ class GXWheel @JvmOverloads constructor(
 
         override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
             model.apertureMaxLength = h - paddingTop - paddingBottom
-            model.itemLen = mItemHeight
+            model.itemSize = mItemHeight
             model.itemCount = data.size
 
             if (h - paddingTop - paddingBottom < mItemHeight)
-                Log.e(TAG, "onSizeChanged: Height is too small to show item, please adjust view height.")
+                Log.e(
+                    TAG,
+                    "onSizeChanged: Height is too small to show item, please adjust view height."
+                )
         }
 
         override fun computeScroll() {
@@ -532,7 +603,7 @@ class GXWheel @JvmOverloads constructor(
                 val itemCenterY = (y + y + mItemHeight) / 2
                 drawText(
                     canvas,
-                    mPaint,
+                    outOfFocusTextPaint,
                     data[i],
                     aperture.centerX() - mItemWidth / 2,
                     itemCenterY
@@ -542,7 +613,7 @@ class GXWheel @JvmOverloads constructor(
                 val itemCenterY = (it.startCoord + it.startCoord + mItemHeight) / 2f
                 drawText(
                     canvas,
-                    mPaint,
+                    outOfFocusTextPaint,
                     data[it.index],
                     aperture.centerX() - mItemWidth / 2,
                     itemCenterY
@@ -563,10 +634,9 @@ class GXWheel @JvmOverloads constructor(
             for (i in data.indices) {
                 val y = model.coordOfIndex(i).toFloat()
                 val itemCenterY = (y + y + mItemHeight) / 2
-                focusPaint.color = cfg.mFocusTextColor
                 drawText(
                     canvas,
-                    focusPaint,
+                    focusTextPaint,
                     data[i],
                     aperture.centerX() - mItemWidth / 2,
                     itemCenterY
@@ -594,9 +664,8 @@ class GXWheel @JvmOverloads constructor(
                         centerX() + w / 2, centerY() + h / 2
                     )
                 }
-                focusPaint.color = cfg.mFocusRectColor
                 canvas.drawRoundRect(
-                    sharp, 20F, 20F, focusPaint
+                    sharp, 20F, 20F, focusRectPaint
                 )
             }
         }
@@ -615,9 +684,8 @@ class GXWheel @JvmOverloads constructor(
                         centerX() + size / 2, centerY() + width / 2
                     )
                 }
-                focusPaint.color = cfg.mFocusCenterLineIndicatorColor
                 canvas.drawRect(
-                    sharp, focusPaint
+                    sharp, focusLineIndicatorPaint
                 )
             }
         }
@@ -629,10 +697,9 @@ class GXWheel @JvmOverloads constructor(
             if (cfg.mShowFocusSpotIndicator) {
 
                 val centerY = (model.focusStart.toFloat() + model.focusEnd.toFloat()) / 2
-                focusPaint.color = cfg.mFocusSpotIndicatorColor
                 canvas.drawCircle(
                     mItemStart - cfg.mFocusSpotIndicatorRadius, centerY,
-                    cfg.mFocusSpotIndicatorRadius, focusPaint
+                    cfg.mFocusSpotIndicatorRadius, focusSpotIndicatorPaint
                 )
             }
         }
@@ -642,21 +709,20 @@ class GXWheel @JvmOverloads constructor(
          * @param canvas 画布
          */
         private fun drawFocusFrame(canvas: Canvas) {
-            val width = mItemWidth * cfg.mFocusFrameHeightFactor
+            val width = mItemWidth * cfg.mFocusFrameSizeFactor
             val left = aperture.centerX() - width / 2
             val right = aperture.centerX() + width / 2
             if (cfg.showFocusFrame) {
-                focusPaint.color = cfg.mFocusFrameColor
                 canvas.drawRect(
                     left,
                     model.focusStart.toFloat(),
                     right,
                     model.focusStart.toFloat() + cfg.mFocusFrameWidth,
-                    focusPaint
+                    focusFramePaint
                 )
                 canvas.drawRect(
                     left, model.focusEnd.toFloat() - cfg.mFocusFrameWidth, right,
-                    model.focusEnd.toFloat(), focusPaint
+                    model.focusEnd.toFloat(), focusFramePaint
                 )
             }
         }
@@ -669,6 +735,9 @@ class GXWheel @JvmOverloads constructor(
      *
      */
     inner class HorizontalView : V() {
+        override val mItemSize4Model: Int
+            get() = mItemWidth
+
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             var height = 0
             var width = 0
@@ -712,10 +781,13 @@ class GXWheel @JvmOverloads constructor(
 
         override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
             model.apertureMaxLength = w - paddingLeft - paddingRight
-            model.itemLen = mItemWidth
+            model.itemSize = mItemWidth
             model.itemCount = data.size
             if (h - paddingTop - paddingBottom < mItemHeight)
-                Log.e(TAG, "onSizeChanged: Height is too small to show item, please adjust view height.")
+                Log.e(
+                    TAG,
+                    "onSizeChanged: Height is too small to show item, please adjust view height."
+                )
         }
 
         override fun computeScroll() {
@@ -743,11 +815,17 @@ class GXWheel @JvmOverloads constructor(
 
             for (i in data.indices) {
                 val x = model.coordOfIndex(i).toFloat()
-                drawText(canvas, mPaint, data[i], x, aperture.centerY())
+                drawText(canvas, outOfFocusTextPaint, data[i], x, aperture.centerY())
             }
             model.itemNeedSplitDisplay()?.let {
 //        val itemCenterY = (it.startCoord + it.startCoord + mItemHeight) / 2f
-                drawText(canvas, mPaint, data[it.index], it.startCoord.toFloat(), aperture.centerY())
+                drawText(
+                    canvas,
+                    outOfFocusTextPaint,
+                    data[it.index],
+                    it.startCoord.toFloat(),
+                    aperture.centerY()
+                )
             }
         }
 
@@ -768,8 +846,7 @@ class GXWheel @JvmOverloads constructor(
 
             for (i in data.indices) {
                 val x = model.coordOfIndex(i).toFloat()
-                focusPaint.color = cfg.mFocusTextColor
-                drawText(canvas, focusPaint, data[i], x, aperture.centerY())
+                drawText(canvas, focusTextPaint, data[i], x, aperture.centerY())
             }
             drawFocusCenterLineIndicator(canvas)
             drawFocusSpotIndicator(canvas)
@@ -786,12 +863,10 @@ class GXWheel @JvmOverloads constructor(
             if (top < 0) top = 0f
             var bottom = aperture.centerY() + height / 2
             if (bottom > aperture.centerY() * 2) bottom = aperture.centerY() * 2
-
             if (cfg.mDrawFocusRect) {
-                focusPaint.color = cfg.mFocusRectColor
                 canvas.drawRoundRect(
                     model.focusStart.toFloat(), top, model.focusEnd.toFloat(), bottom,
-                    20F, 20F, focusPaint
+                    20F, 20F, focusRectPaint
                 )
             }
         }
@@ -805,10 +880,10 @@ class GXWheel @JvmOverloads constructor(
                 val top = aperture.centerY() - height / 2
                 val bottom = aperture.centerY() + height / 2
                 val centerX = (model.focusStart.toFloat() + model.focusEnd.toFloat()) / 2
-                focusPaint.color = cfg.mFocusCenterLineIndicatorColor
                 canvas.drawRect(
                     centerX - cfg.mFocusCenterLineIndicatorWidth / 2, top,
-                    centerX + cfg.mFocusCenterLineIndicatorWidth / 2, bottom, focusPaint
+                    centerX + cfg.mFocusCenterLineIndicatorWidth / 2, bottom,
+                    focusLineIndicatorPaint
                 )
             }
         }
@@ -820,10 +895,9 @@ class GXWheel @JvmOverloads constructor(
             if (cfg.mShowFocusSpotIndicator) {
 
                 val centerX = (model.focusStart.toFloat() + model.focusEnd.toFloat()) / 2
-                focusPaint.color = cfg.mFocusSpotIndicatorColor
                 canvas.drawCircle(
                     centerX, mItemBottom - cfg.mFocusSpotIndicatorRadius,
-                    cfg.mFocusSpotIndicatorRadius, focusPaint
+                    cfg.mFocusSpotIndicatorRadius, focusSpotIndicatorPaint
                 )
             }
         }
@@ -834,31 +908,34 @@ class GXWheel @JvmOverloads constructor(
          * @param canvas 画布
          */
         private fun drawFocusFrame(canvas: Canvas) {
-            val height = mItemHeight * cfg.mFocusFrameHeightFactor
+            val height = mItemHeight * cfg.mFocusFrameSizeFactor
             val top = aperture.centerY() - height / 2
             val bottom = aperture.centerY() + height / 2
             if (cfg.showFocusFrame) {
-                focusPaint.color = cfg.mFocusFrameColor
                 canvas.drawRect(
-                    model.focusStart.toFloat(), top, model.focusStart.toFloat() + cfg.mFocusFrameWidth,
-                    bottom, focusPaint
+                    model.focusStart.toFloat(),
+                    top,
+                    model.focusStart.toFloat() + cfg.mFocusFrameWidth,
+                    bottom,
+                    focusFramePaint
                 )
                 canvas.drawRect(
                     model.focusEnd.toFloat() - cfg.mFocusFrameWidth, top,
-                    model.focusEnd.toFloat(), bottom, focusPaint
+                    model.focusEnd.toFloat(), bottom, focusFramePaint
                 )
             }
         }
     }
 
 
-    class Config(context: Context, attrs: AttributeSet?) {
-        private val _defaultTextSize = sp2px(15f)
-        private val DEFAULT_TEXT_BOUNDARY_MARGIN = dp2px(2f)
-        private val DEFAULT_DIVIDER_HEIGHT = dp2px(1f)
-        private val DEFAULT_NORMAL_TEXT_COLOR = Color.DKGRAY
-        private val DEFAULT_SELECTED_TEXT_COLOR = Color.BLACK
-        var mOrientation= Orientation.Vertical
+    open class Config(val context: Context, val attrs: AttributeSet?) {
+        protected val _defaultTextSize = sp2px(50f)
+        protected val DEFAULT_TEXT_BOUNDARY_MARGIN = dp2px(10f)
+        protected val DEFAULT_DIVIDER_HEIGHT = dp2px(1f)
+        protected val DEFAULT_NORMAL_TEXT_COLOR = Color.DKGRAY
+        protected val DEFAULT_SELECTED_TEXT_COLOR = Color.BLACK
+        var mOrientation = Orientation.Vertical
+
         // 字体大小
         var mTextSize = 0f
 
@@ -878,7 +955,7 @@ class GXWheel @JvmOverloads constructor(
         var mFocusFrameWidth = 0f
 
         // 焦点框左右边线高度系数
-        var mFocusFrameHeightFactor = 0f
+        var mFocusFrameSizeFactor = 0f
 
         // 分割线的颜色
         var mFocusFrameColor = 0
@@ -911,6 +988,7 @@ class GXWheel @JvmOverloads constructor(
         var mMinFlingVelocity = 0
 
         init {
+            Log.d(TAG, "PARENT: ")
             initAttrsAndDefault(context, attrs)
             val viewConfiguration = ViewConfiguration.get(context)
             mMaxFlingVelocity = viewConfiguration.scaledMaximumFlingVelocity
@@ -927,7 +1005,7 @@ class GXWheel @JvmOverloads constructor(
          */
         private fun initAttrsAndDefault(context: Context, attrs: AttributeSet?) {
             val typedArray = context.obtainStyledAttributes(attrs, R.styleable.GXWheel)
-            val mOrientationEnumValue=typedArray.getInt(R.styleable.GXWheel_orientation,1)
+            val mOrientationEnumValue = typedArray.getInt(R.styleable.GXWheel_orientation, 1)
 
             mOrientation = mOrientationEnumValue.toOrientation()
             mTextSize =
@@ -979,7 +1057,7 @@ class GXWheel @JvmOverloads constructor(
                 R.styleable.GXWheel_focusCenterLineIndicatorLineWidth, dp2px(2f)
             )
 
-            mFocusCenterLineIndicatorHeightFactor=typedArray.getFloat(
+            mFocusCenterLineIndicatorHeightFactor = typedArray.getFloat(
                 R.styleable.GXWheel_focusCenterLineIndicatorFactor, 1f
             )
 
@@ -995,7 +1073,7 @@ class GXWheel @JvmOverloads constructor(
                 R.styleable.GXWheel_focusSpotIndicatorRadius, dp2px(2f)
             )
 
-            mFocusFrameHeightFactor = typedArray.getFloat(
+            mFocusFrameSizeFactor = typedArray.getFloat(
                 R.styleable.GXWheel_focusFrameSizeFactor, 1f
             )
             typedArray.recycle()
@@ -1003,11 +1081,11 @@ class GXWheel @JvmOverloads constructor(
     }
 }
 
-enum class Orientation(val value:Int){
+enum class Orientation(val value: Int) {
     Vertical(0),
     Horizontal(1)
 }
 
-fun Int.toOrientation():Orientation{
-    return Orientation.entries.first{it.ordinal==this}
+fun Int.toOrientation(): Orientation {
+    return Orientation.entries.first { it.ordinal == this }
 }

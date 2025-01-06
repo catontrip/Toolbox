@@ -20,7 +20,7 @@ fun Paint.FontMetrics.centerToBaseline(): Float {
 
 
 fun randDouble():Double{
-    val x = Math.random()+LocalTime.now().nano/1000000000
+    val x = Math.random()+LocalTime.now().nano.toDouble()/1000000000
     return if(x>=1) x-1 else x
 }
 
