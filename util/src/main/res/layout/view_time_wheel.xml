@@ -21,10 +21,17 @@
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
             android:layout_weight="1"
-            app:textSize="50sp"
+            app:orientation="vertical"
             app:focusSpotIndicatorColor="@color/red"
-            app:focusCenterLineIndicatorLineWidth="6dp"
-            app:orientation="vertical"/>
+            app:focusCenterLineIndicatorLineWidth="4dp"
+            app:showFocusCenterLineIndicator="true"
+            app:showFocusSpotIndicator="true"
+            app:focusSpotIndicatorRadius="6dp"
+            app:textSize="20sp"
+            app:marginBetweenItem="12dp"
+            app:showFocusFrame="true"
+            app:focusFrameColor="@color/deepSkyBlue"
+            app:focusFrameWidth="6dp"/>
 
         <TextView
             android:id="@+id/splitText"
@@ -38,10 +45,17 @@
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
             android:layout_weight="1"
-            app:textSize="50sp"
             app:orientation="vertical"
-            app:focusSpotIndicatorRadius="12dp"
-            app:marginBetweenItem="16dp"/>
+            app:focusSpotIndicatorColor="@color/red"
+            app:focusCenterLineIndicatorLineWidth="4dp"
+            app:showFocusCenterLineIndicator="true"
+            app:showFocusSpotIndicator="true"
+            app:focusSpotIndicatorRadius="6dp"
+            app:textSize="40sp"
+            app:marginBetweenItem="12dp"
+            app:showFocusFrame="true"
+            app:focusFrameColor="@color/deepSkyBlue"
+            app:focusFrameWidth="6dp"/>
     </LinearLayout>
 
 </merge>

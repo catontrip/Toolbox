@@ -18,12 +18,12 @@ fun Paint.FontMetrics.centerToBaseline(): Float {
     return (descent - ascent) / 2 - descent
 }
 
-
-fun randDouble():Double{
-    val x = Math.random()+LocalTime.now().nano.toDouble()/1000000000
-    return if(x>=1) x-1 else x
+fun randDouble(): Double {
+    val x = Math.random() + LocalTime.now().nano.toDouble() / 1000000000
+    return if (x >= 1) x - 1 else x
 }
 
-fun randInt(range: IntRange):Int{
-    return range.start+ (randDouble()*(range.endInclusive-range.start)).toInt()
+fun randInt(range: IntRange): Int {
+    return range.first + (Math.random() * (range.last - range.first)).toInt()
 }
+

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ClockInRangeActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        app:layout_constraintTop_toTopOf="parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tvRange"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="12pt"
+                />
+
+            <TextView
+                android:id="@+id/tvSelection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textSize="12pt"/>
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+
+    <com.guanxun.util.GXTimeWheel
+        android:id="@+id/timePicker"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="32dp"
+        app:drawFocusRect_tp="true"
+        app:focusHeightFactor_tp="2"
+        app:focusRectColor_tp="@color/white"
+        app:showFocusFrame_tp="false"
+        app:focusFrameColor_tp="@color/tiffanyBlue"
+        app:focusFrameWidth_tp="4dp"
+        app:focusSpotIndicatorRadius_tp="6dp"
+        app:showFocusCenterLineIndicator_tp="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/card" />
+</androidx.constraintlayout.widget.ConstraintLayout>

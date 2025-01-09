@@ -7,21 +7,49 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-        <com.guanxun.util.GXTimeWheel
-            android:id="@+id/p"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_margin="10dp"
-            app:clockFormat_tp="hour24"
-            app:focusSpotIndicatorColor_tp="@color/red"
-            app:focusCenterLineIndicatorLineWidth_tp="4dp"
-            app:showFocusCenterLineIndicator_tp="true"
-            app:showFocusSpotIndicator_tp="true"
-            app:focusSpotIndicatorRadius_tp="6dp"
-            app:textSize_tp="40sp"
-            app:marginBetweenItem_tp="12dp"
-            app:showFocusFrame_tp="true"
-            app:focusFrameColor_tp="@color/deepSkyBlue"
-            app:focusFrameWidth_tp="6dp"/>
+    <com.guanxun.util.GXWheel
+        android:id="@+id/wheel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:orientation="vertical"
+        app:focusSpotIndicatorColor="@color/red"
+        app:focusCenterLineIndicatorLineWidth="2dp"
+        app:showFocusCenterLineIndicator="true"
+        app:showFocusSpotIndicator="true"
+        app:focusSpotIndicatorRadius="6dp"
+        app:textSize="18sp"
+        app:marginBetweenItem="12dp"
+        app:showFocusFrame="true"
+        app:focusFrameColor="@color/deepSkyBlue"
+        app:focusFrameWidth="6dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnDemo"/>
+
+    <Button
+        android:id="@+id/btnDemo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="DEMO"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+<!--    <com.guanxun.util.GXTimeWheel-->
+<!--        android:id="@+id/p"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_margin="10dp"-->
+<!--        app:clockFormat_tp="hour24"-->
+<!--        app:focusCenterLineIndicatorLineWidth_tp="4dp"-->
+<!--        app:focusFrameColor_tp="@color/deepSkyBlue"-->
+<!--        app:focusFrameWidth_tp="4dp"-->
+<!--        app:focusSpotIndicatorColor_tp="@color/red"-->
+<!--        app:focusSpotIndicatorRadius_tp="6dp"-->
+<!--        app:marginBetweenItem_tp="12dp"-->
+<!--        app:showFocusCenterLineIndicator_tp="false"-->
+<!--        app:showFocusFrame_tp="true"-->
+<!--        app:showFocusSpotIndicator_tp="true"-->
+<!--        app:textSize_tp="40sp"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/wheel"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

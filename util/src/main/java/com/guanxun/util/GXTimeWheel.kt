@@ -56,15 +56,19 @@ class GXTimeWheel : LinearLayout {
             field = value
             tvSplitText.text = value
         }
-        get() = tvSplitText.text.toString()
 
     /**
      * 分钟列表
      */
-    private var minuteList = (0..59).toList()
+    var minuteList = (0..59).toList()
         set(value) {
+            require(value.isNotEmpty()){"Empty minute list."}
             field = value
             minuteWheel.data = value
+
+            maxTimeByMinute=24*60 - (value.maxOrNull()?:0)
+            minTimeByMinute=0
+            Log.d(TAG, "ValidTimeRange ia reset to 0:00 and 23:59. ")
         }
 
     /**
@@ -78,6 +82,7 @@ class GXTimeWheel : LinearLayout {
      */
     private val minuteValue: Int
         get() = minuteList[minuteWheel.selectedIndex]
+
 
     /**
      * 小时列表
@@ -225,7 +230,7 @@ class GXTimeWheel : LinearLayout {
             validateWheel()
         }
     }
-
+    
     /**
      * 仅供processWheel()中使用
      */
@@ -242,11 +247,18 @@ class GXTimeWheel : LinearLayout {
         } else {
             pauseFlag = true
             if (minute > maxTimeByMinute) {
-                setWheel(maxTimeByMinute)
+                val minuteValue: Int = maxTimeByMinute % 60
+                val newMinuteValue = minuteList.filter { it <= minuteValue }
+                    .maxOrNull() ?: minuteValue
+                setWheel(maxTimeByMinute - (minuteValue - newMinuteValue))
             } else if (minute < minTimeByMinute) {
-                setWheel(minTimeByMinute)
+                val minuteValue: Int = minTimeByMinute % 60
+                val newMinuteValue = minuteList.filter { it >= minuteValue }
+                    .minOrNull() ?: minuteValue
+                setWheel(minTimeByMinute - (minuteValue - newMinuteValue))
             }
             pauseFlag = false
+            this.onSelectionChangedListener(currentTime)
         }
     }
 
@@ -260,6 +272,12 @@ class GXTimeWheel : LinearLayout {
         if (maxT <= minT) throw IllegalArgumentException(
             "Max time $maxHour:$maxMinute is not greater than min time $minHour:$minMinute"
         )
+        require(minuteList.indexOf(minMinute)!=-1){
+            "minMinute $minMinute is not found in minuteList"
+        }
+        require(minuteList.indexOf(maxMinute)!=-1){
+            "maxMinute $maxMinute is not found in minuteList"
+        }
         setValidTimeRange(maxT, minT)
     }
 
@@ -267,6 +285,9 @@ class GXTimeWheel : LinearLayout {
         if (maxByMinute <= minByMinute) throw IllegalArgumentException(
             "Max time $maxByMinute is not greater than min time $minByMinute"
         )
+        require(maxByMinute > minByMinute) {
+            "Max time $maxByMinute is not greater than min time $minByMinute"
+        }
         minTimeByMinute = minByMinute
         maxTimeByMinute = maxByMinute
         if (minTimeByMinute >= 12 * 60) {
@@ -291,8 +312,18 @@ class GXTimeWheel : LinearLayout {
                 if (h == 0) h = 12
             }
         }
-        hourWheel.selectedIndex = hourList.indexOf(h)
-        minuteWheel.selectedIndex = minuteList.indexOf(m)
+        var index = hourList.indexOf(h)
+        if (index == -1) {
+            hourWheel.selectedIndex = 0
+        } else {
+            hourWheel.selectedIndex = index
+        }
+        index = minuteList.indexOf(m)
+        if (index == -1) {
+            minuteWheel.selectedIndex = 0
+        } else {
+            minuteWheel.selectedIndex = index
+        }
     }
 
     class Config(context: Context, attrs: AttributeSet?) : GXWheel.Config(context, attrs) {
@@ -348,7 +379,7 @@ class GXTimeWheel : LinearLayout {
             mDrawFocusRect =
                 typedArray.getBoolean(R.styleable.GXTimeWheel_drawFocusRect_tp, false)
             mFocusRectColor =
-                typedArray.getColor(R.styleable.GXTimeWheel_focusRectColor_tp, Color.TRANSPARENT)
+                typedArray.getColor(R.styleable.GXTimeWheel_focusRectColor_tp, Color.WHITE)
 
             mFocusHeightFactor = typedArray.getFloat(
                 R.styleable.GXTimeWheel_focusHeightFactor_tp, 1f

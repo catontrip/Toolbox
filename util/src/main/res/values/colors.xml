@@ -8,6 +8,14 @@
     <color name="lightCoral">#DF7373</color>
     <color name="tiffanyBlue">#84DCC6</color>
     <color name="antiqueWhite">#FAEBD7</color>
+    <color name="skyBlue">#87CEEB</color>
     <color name="deepSkyBlue">#00BFFF</color>
     <color name="limeGreen">#4CD437</color>
+    <color name="c1">#C9DABF</color>
+    <color name="c2">#9CA986</color>
+    <color name="c3">#808D7C</color>
+    <color name="c4">#E4C59E</color>
+    <color name="lightCyan">#E0FFFF</color>
+    <color name="lightSalmon">#FFA07A</color>
+    <color name="salmon">#FA8072</color>
 </resources>

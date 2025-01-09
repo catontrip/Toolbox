@@ -468,7 +468,7 @@ class GXWheel @JvmOverloads constructor(
         protected val focusRectPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
             get() {
                 return field.apply {
-                    color = cfg.mFocusFrameColor
+                    color = cfg.mFocusRectColor
                 }
             }
 

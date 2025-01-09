@@ -1,18 +1,19 @@
 package com.guanxun.toolbox
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.guanxun.util.GXTimeWheel
 import com.guanxun.util.GXWheel
-import java.time.LocalTime
 
 class MainActivity : AppCompatActivity() {
-    var hour: GXWheel? = null
-    var p: GXTimeWheel? = null
+    private var wheel: GXWheel? = null
+    private var demoIntent: Intent? = null
+    private var btnDemo: Button? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -22,19 +23,30 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        p=findViewById(R.id.p)
-        p?.apply {
-            //minuteList=(0..59 step 5).toList()
-            setValidTimeRange(19,0,5,45)
-            onSelectionChangedListener={ t ->
-                Toast.makeText(context, "$t", Toast.LENGTH_SHORT).show()
+        wheel = findViewById(R.id.wheel)
+        wheel?.apply {
+            data = listOf("水平滚轮", "垂直滚轮", "时刻选择", "区间时刻选择")
+            onSelectionChangedListener = { dataList, index ->
+                demoIntent = prepareIntent(dataList[index].toString())
             }
-            currentTime= LocalTime.of(5,45)
-            use12Hour=true
         }
+        btnDemo=findViewById(R.id.btnDemo)
+        btnDemo?.setOnClickListener {
+            if (demoIntent == null) {
+                Toast.makeText(this, "请选择功能", Toast.LENGTH_SHORT).show()
+            }else{
+                startActivity(demoIntent)
+            }
+        }
+    }
 
-//        hour?.data=(0..6).toList()
-//        minute=findViewById(R.id.minute)
-//        minute?.data = (8..16).toList()
+    private fun prepareIntent(choice: String): Intent? {
+        return when (choice) {
+            "水平滚轮" -> Intent(this, HorizontalWheelActivity::class.java)
+            "垂直滚轮" -> Intent(this, VerticalWheelActivity::class.java)
+            "区间时刻选择"->Intent(this, ClockInRangeActivity::class.java)
+            "时刻选择"->Intent(this, TimePickerActivity::class.java)
+            else -> null
+        }
     }
 }
