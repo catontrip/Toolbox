@@ -55,6 +55,9 @@
         <attr name="focusHeightFactor" format="float" />
     </declare-styleable>
 
+
+
+<!--               GXTimeWheel                        -->
     <declare-styleable name="GXTimeWheel">
 
         <!--时钟显示格式-->
@@ -110,4 +113,21 @@
         <!--焦点窗口高度系数-->
         <attr name="focusHeightFactor_tp" format="float" />
     </declare-styleable>
+
+
+    <!--               GXRatingBar                        -->
+    <declare-styleable name="GXRatingBar">
+        <!--五角星颜色 -->
+        <attr name="starHeight" format="dimension"/>
+        <!--五角星对齐方式 -->
+        <attr name="starAlignment" format="enum">
+            <enum name="left" value="0" />
+            <enum name="center" value="1" />
+            <enum name="right" value="2" />
+        </attr>
+        <!--五角星颜色-->
+        <attr name="starColor" format="color" />
+        <attr name="innerPentagonDiameterFactor" format="float"/>
+    </declare-styleable>
+
 </resources>
