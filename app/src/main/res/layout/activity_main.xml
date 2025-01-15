@@ -32,13 +32,6 @@
         android:layout_margin="16dp"
         android:text="DEMO"
         app:layout_constraintBottom_toBottomOf="parent"/>
-    <com.guanxun.util.GXRatingBar
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:starHeight="18dp"
-        app:starColor="@color/yellowGreen"
-        app:starAlignment="center"
-        app:innerPentagonDiameterFactor="0.4"/>
 
 <!--    <com.guanxun.util.GXTimeWheel-->
 <!--        android:id="@+id/p"-->

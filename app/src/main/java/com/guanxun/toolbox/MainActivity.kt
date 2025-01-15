@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         }
         wheel = findViewById(R.id.wheel)
         wheel?.apply {
-            data = listOf("水平滚轮", "垂直滚轮", "时刻选择", "区间时刻选择")
+            data = listOf("水平滚轮", "垂直滚轮", "时刻选择", "区间时刻选择", "星条打分")
             onSelectionChangedListener = { dataList, index ->
                 demoIntent = prepareIntent(dataList[index].toString())
             }
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
             "垂直滚轮" -> Intent(this, VerticalWheelActivity::class.java)
             "区间时刻选择"->Intent(this, ClockInRangeActivity::class.java)
             "时刻选择"->Intent(this, TimePickerActivity::class.java)
+            "星条打分"->Intent(this, RatingBarActivity::class.java)
             else -> null
         }
     }
