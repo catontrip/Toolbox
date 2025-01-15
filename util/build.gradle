@@ -52,7 +52,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.guanxun'
             artifactId = 'util'
-            version = '1.0.5b'
+            version = '1.0.6a'
 
             afterEvaluate {
                 from components.release
